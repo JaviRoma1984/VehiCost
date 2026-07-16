@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VehiCost</title>
+<link rel="stylesheet" href="styles.css">
+
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1DB89A">
+
+<!-- iOS: Safari no lee manifest.json, necesita estas etiquetas para "Añadir a inicio" -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="VehiCost">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+
+<div class="app">
+
+    <header class="app-header">
+        <div class="app-header__title">
+            <img class="app-header__icon" src="icons/icon-192.png" alt="VehiCost">
+            <span>VehiCost</span>
+        </div>
+        <div class="app-header__actions">
+            <button class="btn-install" id="installButton" style="display:none">⬇ Instalar</button>
+            <button class="hamburger-btn" id="themeToggleButton" aria-label="Cambiar tema">🌙</button>
+            <button class="hamburger-btn" id="menuButton" aria-label="Menú">☰</button>
+        </div>
+    </header>
+
+    <div class="menu-overlay" id="menuOverlay">
+        <div class="menu-panel">
+            <button class="menu-item" id="menuCrearVehiculo">➕ Crear vehículo</button>
+            <button class="menu-item" id="menuListarVehiculos">📋 Listar vehículos</button>
+        </div>
+    </div>
+
+    <main class="app-content">
+
+        <!-- Selector de vehículo + acciones de repostaje -->
+        <section id="vehicleSelectorPanel" class="panel">
+            <div class="card">
+                <label class="field-label">VEHÍCULO</label>
+                <select id="vehiclePicker" class="input-select">
+                    <option value="" disabled selected>Selecciona tu vehículo</option>
+                </select>
+            </div>
+
+            <div class="card" id="repostajeActionsPanel" style="display:none">
+                <div class="actions-row">
+                    <button class="btn btn-primary" id="btnNewRepostaje">⛽ Nuevo repostaje</button>
+                    <button class="btn btn-secondary" id="btnListRepostajes">📋 Listar repostajes</button>
+                </div>
+                <hr class="divider">
+                <div class="stats-row">
+                    <div class="stat">
+                        <span class="stat-label">Consumo medio mensual</span>
+                        <span class="stat-value" id="consumoMensual">—</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Consumo medio total</span>
+                        <span class="stat-value" id="consumoTotal">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="itv-banner" id="itvReminderBanner" style="display:none"></div>
+        </section>
+
+        <!-- Lista de vehículos -->
+        <section id="vehicleListPanel" class="panel card" style="display:none">
+            <div class="panel-header">
+                <h2 class="panel-title">LISTA DE VEHÍCULOS</h2>
+                <button class="btn-back" id="btnBackFromVehicleList">Volver</button>
+            </div>
+            <div id="vehiclesList" class="list"></div>
+        </section>
+
+        <!-- Formulario: crear vehículo -->
+        <section id="createVehicleFormPanel" class="panel card" style="display:none">
+            <div class="panel-header">
+                <h2 class="form-title" id="createVehicleFormTitle">🚗 Nuevo Vehículo</h2>
+                <button class="btn-back" id="btnBackFromCreateVehicle">Volver</button>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">Nombre del vehículo *</label>
+                <input type="text" id="vehicleNameInput" class="input-text" placeholder="Ej. Sedán Familiar">
+            </div>
+
+            <div class="form-row-2">
+                <div class="field-group">
+                    <label class="field-label">Matrícula *</label>
+                    <input type="text" id="licensePlateInput" class="input-text" placeholder="Ej. 1234ABC">
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Marca *</label>
+                    <input type="text" id="brandInput" class="input-text" placeholder="Ej. Toyota">
+                </div>
+            </div>
+
+            <div class="form-row-2">
+                <div class="field-group">
+                    <label class="field-label">Modelo *</label>
+                    <input type="text" id="modelInput" class="input-text" placeholder="Ej. Corolla">
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Tipo de vehículo *</label>
+                    <select id="vehicleTypeSelect" class="input-select">
+                        <option value="" disabled selected>Seleccionar...</option>
+                        <option value="🚗 Coche">🚗 Coche</option>
+                        <option value="🏍️ Motocicleta">🏍️ Motocicleta</option>
+                        <option value="🛺 Quad">🛺 Quad</option>
+                        <option value="🚐 Furgoneta">🚐 Furgoneta</option>
+                        <option value="🚛 Camión">🚛 Camión</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row-2">
+                <div class="field-group">
+                    <label class="field-label">Año *</label>
+                    <input type="number" id="yearInput" class="input-text" placeholder="Ej. 2020">
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Tipo de combustible *</label>
+                    <select id="vehicleFuelTypeSelect" class="input-select">
+                        <option value="" disabled selected>Seleccionar...</option>
+                        <option>Diesel</option>
+                        <option>Gasolina</option>
+                        <option>Etanol</option>
+                        <option>GLP (Gas Licuado)</option>
+                        <option>GNC (Gas Natural)</option>
+                        <option>Eléctrico</option>
+                        <option>Flex</option>
+                        <option>GNL (Gas Natural Licuado)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">Descripción</label>
+                <textarea id="descriptionInput" class="input-text input-textarea" placeholder="Descripción opcional"></textarea>
+            </div>
+
+            <p class="form-message" id="createVehicleMessage" style="display:none"></p>
+
+            <div class="actions-row">
+                <button class="btn btn-secondary" id="btnCancelCreateVehicle">Cancelar</button>
+                <button class="btn btn-primary" id="btnSaveVehicle">💾 Guardar</button>
+            </div>
+        </section>
+
+        <!-- Formulario: nuevo repostaje -->
+        <section id="repostajeFormPanel" class="panel card" style="display:none">
+            <div class="panel-header">
+                <h2 class="form-title" id="repostajeFormTitle">⛽ Nuevo Repostaje</h2>
+                <button class="btn-back" id="btnBackFromRepostajeForm">Volver</button>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">Km actuales *</label>
+                <input type="number" id="kmActualesInput" class="input-text" placeholder="Ej. 45000">
+            </div>
+
+            <div class="form-row-2">
+                <div class="field-group">
+                    <label class="field-label">Litros repostados *</label>
+                    <input type="number" step="0.01" id="litrosInput" class="input-text" placeholder="Ej. 40.5">
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Tipo de combustible *</label>
+                    <select id="repostajeFuelTypeSelect" class="input-select">
+                        <option value="" disabled selected>Seleccionar...</option>
+                        <option>Diesel</option>
+                        <option>Gasolina</option>
+                        <option>Etanol</option>
+                        <option>GLP (Gas Licuado)</option>
+                        <option>GNC (Gas Natural)</option>
+                        <option>Eléctrico</option>
+                        <option>Flex</option>
+                        <option>GNL (Gas Natural Licuado)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row-2">
+                <div class="field-group">
+                    <label class="field-label">Precio por litro (€) *</label>
+                    <input type="number" step="0.001" id="precioPorLitroInput" class="input-text" placeholder="Ej. 1.55">
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Coste total</label>
+                    <div class="input-text input-readonly" id="costeTotalDisplay">0.00 €</div>
+                </div>
+            </div>
+
+            <div class="form-row-2">
+                <div class="field-group">
+                    <label class="field-label">Fecha *</label>
+                    <input type="date" id="fechaInput" class="input-text">
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Hora *</label>
+                    <input type="time" id="horaInput" class="input-text">
+                </div>
+            </div>
+
+            <p class="form-message" id="repostajeMessage" style="display:none"></p>
+
+            <div class="actions-row">
+                <button class="btn btn-secondary" id="btnCancelRepostaje">Cancelar</button>
+                <button class="btn btn-primary" id="btnSaveRepostaje">💾 Guardar datos</button>
+            </div>
+        </section>
+
+        <!-- Lista de repostajes -->
+        <section id="repostajeListPanel" class="panel card" style="display:none">
+            <div class="panel-header">
+                <h2 class="panel-title" id="repostajeListTitle">REPOSTAJES</h2>
+                <button class="btn-back" id="btnBackFromRepostajeList">Volver</button>
+            </div>
+            <div id="repostajesList" class="list"></div>
+        </section>
+
+        <!-- Formulario: gastos generales del vehículo -->
+        <section id="gastosGeneralesFormPanel" class="panel card" style="display:none">
+            <div class="panel-header">
+                <h2 class="form-title">Gastos generales</h2>
+                <button class="btn-back" id="btnBackFromGastosGenerales">Volver</button>
+            </div>
+
+            <div class="form-row-2">
+                <div class="field-group">
+                    <label class="field-label">Gasto anual del seguro</label>
+                    <input type="number" step="0.01" id="seguroAnualInput" class="input-text" placeholder="Ej. 450">
+                </div>
+                <div class="field-group">
+                    <label class="field-label">&nbsp;</label>
+                    <button class="btn btn-secondary btn-block" id="btnOpenItv">🛂 ITV</button>
+                </div>
+            </div>
+
+            <div class="form-row-2">
+                <div class="field-group">
+                    <label class="field-label">IVTM anual (Viñeta)</label>
+                    <input type="number" step="0.01" id="ivtmAnualInput" class="input-text" placeholder="Ej. 120">
+                </div>
+                <div class="field-group">
+                    <label class="field-label">&nbsp;</label>
+                    <button class="btn btn-secondary btn-block btn-match-input" id="btnOpenMantenimientos">Mantenimientos</button>
+                </div>
+            </div>
+
+            <div class="form-row-3">
+                <button class="btn btn-secondary" id="btnOpenFinanciacion">Financiación</button>
+                <button class="btn btn-secondary" id="btnOpenRenting">Renting</button>
+                <button class="btn btn-secondary" id="btnOpenLeasing">Leasing</button>
+            </div>
+
+            <p class="form-message" id="gastosGeneralesMessage" style="display:none"></p>
+
+            <div class="actions-row">
+                <button class="btn btn-primary" id="btnSaveGastosGenerales">💾 Guardar</button>
+            </div>
+        </section>
+
+        <!-- Menú de gastos de mantenimiento -->
+        <section id="maintenanceMenuPanel" class="panel card" style="display:none">
+            <div class="panel-header">
+                <h2 class="form-title">Gastos de mantenimiento</h2>
+                <button class="btn-back" id="btnBackFromMaintenanceMenu">Volver</button>
+            </div>
+            <div class="actions-row">
+                <button class="btn btn-secondary" id="btnListMantenimientos">📋 Listar gastos</button>
+                <button class="btn btn-primary" id="btnAddMantenimiento">➕ Añadir</button>
+            </div>
+        </section>
+
+        <!-- Listado de gastos de mantenimiento -->
+        <section id="maintenanceListPanel" class="panel card" style="display:none">
+            <div class="panel-header">
+                <h2 class="panel-title">GASTOS DE MANTENIMIENTO</h2>
+                <button class="btn-back" id="btnBackFromMaintenanceList">Volver</button>
+            </div>
+            <div id="maintenanceList" class="list"></div>
+        </section>
+
+        <!-- Formulario: ITV -->
+        <section id="itvFormPanel" class="panel card" style="display:none">
+            <div class="panel-header">
+                <h2 class="form-title">ITV</h2>
+                <button class="btn-back" id="btnBackFromItv">Volver</button>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">Cantidad (€)</label>
+                <input type="number" step="0.01" id="itvCantidadInput" class="input-text" placeholder="Ej. 35">
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">Fecha de caducidad (o de la primera ITV que te toque)</label>
+                <input type="date" id="itvFechaCaducidadInput" class="input-text">
+            </div>
+
+            <div class="field-group">
+                <label class="checkbox-row">
+                    <input type="checkbox" id="itvAviso1MesCheckbox">
+                    Avisarme 1 mes antes de la caducidad (para pedir cita)
+                </label>
+                <label class="checkbox-row">
+                    <input type="checkbox" id="itvAviso15DiasCheckbox">
+                    Avisarme también 15 días antes de la caducidad
+                </label>
+            </div>
+
+            <p class="form-message" id="itvMessage" style="display:none"></p>
+
+            <div class="actions-row">
+                <button class="btn btn-primary" id="btnSaveItv">💾 Guardar</button>
+            </div>
+        </section>
+
+        <!-- Formulario: financiación -->
+        <section id="financiacionFormPanel" class="panel card" style="display:none">
+            <div class="panel-header">
+                <h2 class="form-title">Financiación</h2>
+                <button class="btn-back" id="btnBackFromFinanciacion">Volver</button>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">Gasto mensual (€)</label>
+                <input type="number" step="0.01" id="financiacionGastoMensualInput" class="input-text" placeholder="Ej. 150">
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">¿Desde qué mes estás pagando?</label>
+                <input type="month" id="financiacionMesInicioInput" class="input-text">
+            </div>
+
+            <p class="form-message" id="financiacionMessage" style="display:none"></p>
+
+            <div class="actions-row">
+                <button class="btn btn-primary" id="btnSaveFinanciacion">💾 Guardar</button>
+            </div>
+        </section>
+
+        <!-- Formulario: renting -->
+        <section id="rentingFormPanel" class="panel card" style="display:none">
+            <div class="panel-header">
+                <h2 class="form-title">Renting</h2>
+                <button class="btn-back" id="btnBackFromRenting">Volver</button>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">Frecuencia de pago</label>
+                <select id="rentingFrecuenciaSelect" class="input-select">
+                    <option value="mensual">Mensual</option>
+                    <option value="trimestral">Trimestral</option>
+                    <option value="anual">Anual</option>
+                </select>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">Cantidad (€)</label>
+                <input type="number" step="0.01" id="rentingCantidadInput" class="input-text" placeholder="Ej. 300">
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">¿En qué mes empezaste a pagarlo?</label>
+                <input type="month" id="rentingMesInicioInput" class="input-text">
+            </div>
+
+            <p class="form-message" id="rentingMessage" style="display:none"></p>
+
+            <div class="actions-row">
+                <button class="btn btn-primary" id="btnSaveRenting">💾 Guardar</button>
+            </div>
+        </section>
+
+        <!-- Formulario: leasing -->
+        <section id="leasingFormPanel" class="panel card" style="display:none">
+            <div class="panel-header">
+                <h2 class="form-title">Leasing</h2>
+                <button class="btn-back" id="btnBackFromLeasing">Volver</button>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">Frecuencia de pago</label>
+                <select id="leasingFrecuenciaSelect" class="input-select">
+                    <option value="mensual">Mensual</option>
+                    <option value="trimestral">Trimestral</option>
+                    <option value="anual">Anual</option>
+                </select>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">Cantidad (€)</label>
+                <input type="number" step="0.01" id="leasingCantidadInput" class="input-text" placeholder="Ej. 300">
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">¿En qué mes empezaste a pagarlo?</label>
+                <input type="month" id="leasingMesInicioInput" class="input-text">
+            </div>
+
+            <p class="form-message" id="leasingMessage" style="display:none"></p>
+
+            <div class="actions-row">
+                <button class="btn btn-primary" id="btnSaveLeasing">💾 Guardar</button>
+            </div>
+        </section>
+
+        <!-- Formulario: añadir/editar gasto de mantenimiento -->
+        <section id="maintenanceFormPanel" class="panel card" style="display:none">
+            <div class="panel-header">
+                <h2 class="form-title" id="maintenanceFormTitle">🔧 Nuevo Mantenimiento</h2>
+                <button class="btn-back" id="btnBackFromMaintenanceForm">Volver</button>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">Título (tipo de mantenimiento) *</label>
+                <input type="text" id="maintenanceTitleInput" class="input-text" placeholder="Ej. Cambio de aceite">
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">Cantidad (€) *</label>
+                <input type="number" step="0.01" id="maintenanceAmountInput" class="input-text" placeholder="Ej. 80">
+            </div>
+
+            <p class="form-message" id="maintenanceFormMessage" style="display:none"></p>
+
+            <div class="actions-row">
+                <button class="btn btn-primary" id="btnSaveMaintenance">💾 Guardar cambios</button>
+            </div>
+        </section>
+
+        <!-- Resumen de consumo del vehículo seleccionado (siempre debajo del panel activo) -->
+        <section id="consumptionSummaryPanel" class="card" style="display:none">
+            <div class="gasto-mensual-line">
+                <span class="gasto-mensual-label">Gasto medio mensual:</span>
+                <span class="gasto-mensual-value" id="gastoMedioMensualLabel">—</span>
+            </div>
+        </section>
+
+        <!-- Otros gastos del vehículo + gasto anual acumulado -->
+        <section id="otherExpensesSummaryPanel" class="card" style="display:none">
+            <button class="btn btn-secondary btn-block" id="btnOtherExpenses">Otros gastos del vehículo</button>
+            <div class="annual-expenses-block">
+                <div class="annual-expenses-title">Gastos totales anual acumulado del vehículo</div>
+                <div class="annual-expenses-value" id="annualExpensesValue">—</div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
