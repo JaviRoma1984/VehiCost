@@ -116,6 +116,7 @@
                         <option value="🏍️ Motocicleta">🏍️ Motocicleta</option>
                         <option value="🛺 Quad">🛺 Quad</option>
                         <option value="🚐 Furgoneta">🚐 Furgoneta</option>
+                        <option value="🚌 Autocaravana">🚌 Autocaravana</option>
                         <option value="🚛 Camión">🚛 Camión</option>
                     </select>
                 </div>
@@ -225,6 +226,117 @@
                 <button class="btn-back" id="btnBackFromRepostajeList">Volver</button>
             </div>
             <div id="repostajesList" class="list"></div>
+        </section>
+
+        <!-- Detalle de un repostaje concreto -->
+        <section id="repostajeDetailPanel" class="panel card" style="display:none">
+            <div class="panel-header">
+                <h2 class="form-title">Detalle del repostaje</h2>
+                <button class="btn-back" id="btnBackFromRepostajeDetail">Volver</button>
+            </div>
+
+            <!-- Vista de solo lectura -->
+            <div id="repostajeDetailView">
+                <div class="field-group">
+                    <label class="field-label">Fecha y hora</label>
+                    <div class="input-text input-readonly" id="detailFechaHora">—</div>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="field-group">
+                        <label class="field-label">Km actuales</label>
+                        <div class="input-text input-readonly" id="detailKm">—</div>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Tipo de combustible</label>
+                        <div class="input-text input-readonly" id="detailFuel">—</div>
+                    </div>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="field-group">
+                        <label class="field-label">Litros repostados</label>
+                        <div class="input-text input-readonly" id="detailLitros">—</div>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Precio por litro (€)</label>
+                        <div class="input-text input-readonly" id="detailPrecio">—</div>
+                    </div>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="field-group">
+                        <label class="field-label">Coste total</label>
+                        <div class="input-text input-readonly" id="detailCoste">—</div>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Consumo</label>
+                        <div class="input-text input-readonly" id="detailConsumo">—</div>
+                    </div>
+                </div>
+
+                <div class="actions-row">
+                    <button class="icon-btn icon-btn--edit" id="btnEditRepostaje" aria-label="Modificar repostaje">✏️</button>
+                    <button class="icon-btn" id="btnDeleteRepostaje" aria-label="Borrar repostaje">🗑️</button>
+                </div>
+            </div>
+
+            <!-- Formulario de edición -->
+            <div id="repostajeDetailEdit" style="display:none">
+                <div class="field-group">
+                    <label class="field-label">Km actuales *</label>
+                    <input type="number" id="editKmActualesInput" class="input-text">
+                </div>
+
+                <div class="form-row-2">
+                    <div class="field-group">
+                        <label class="field-label">Litros repostados *</label>
+                        <input type="number" step="0.01" id="editLitrosInput" class="input-text">
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Tipo de combustible *</label>
+                        <select id="editFuelTypeSelect" class="input-select">
+                            <option value="" disabled selected>Seleccionar...</option>
+                            <option>Diesel</option>
+                            <option>Gasolina</option>
+                            <option>Etanol</option>
+                            <option>GLP (Gas Licuado)</option>
+                            <option>GNC (Gas Natural)</option>
+                            <option>Eléctrico</option>
+                            <option>Flex</option>
+                            <option>GNL (Gas Natural Licuado)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="field-group">
+                        <label class="field-label">Precio por litro (€) *</label>
+                        <input type="number" step="0.001" id="editPrecioPorLitroInput" class="input-text">
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Coste total</label>
+                        <div class="input-text input-readonly" id="editCosteTotalDisplay">0.00 €</div>
+                    </div>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="field-group">
+                        <label class="field-label">Fecha *</label>
+                        <input type="date" id="editFechaInput" class="input-text">
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Hora *</label>
+                        <input type="time" id="editHoraInput" class="input-text">
+                    </div>
+                </div>
+
+                <p class="form-message" id="repostajeDetailEditMessage" style="display:none"></p>
+
+                <div class="actions-row">
+                    <button class="btn btn-primary" id="btnSaveRepostajeEdit">💾 Guardar cambios</button>
+                </div>
+            </div>
         </section>
 
         <!-- Formulario: gastos generales del vehículo -->

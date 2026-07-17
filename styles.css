@@ -482,6 +482,15 @@ body {
     border-bottom: none;
 }
 
+.list-item--clickable {
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.list-item--clickable:hover {
+    background: var(--color-primary-light);
+}
+
 .list-item__title {
     font-weight: 700;
     font-size: 15px;

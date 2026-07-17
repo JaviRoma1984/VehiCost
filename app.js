@@ -14,6 +14,7 @@ const PANEL_IDS = [
     'createVehicleFormPanel',
     'repostajeFormPanel',
     'repostajeListPanel',
+    'repostajeDetailPanel',
     'gastosGeneralesFormPanel',
     'maintenanceMenuPanel',
     'maintenanceListPanel',
@@ -34,6 +35,7 @@ let editingVehicleId = null; // null = formulario en modo "crear"; si no, id del
 let gastosGeneralesReturnPanel = 'vehicleSelectorPanel'; // panel al que volver al salir de "Gastos generales"
 let editingMaintenanceId = null; // null = alta de mantenimiento; si no, id del que se está editando
 let maintenanceFormReturnPanel = 'gastosGeneralesFormPanel'; // panel al que volver al salir del formulario de mantenimiento
+let selectedRepostajeId = null; // id del repostaje que se está viendo/editando en el panel de detalle
 
 // ==========================================
 // PERSISTENCIA (localStorage)
@@ -293,7 +295,7 @@ function createRepostajeRowElement(h) {
     const importe = (h.repostaje.litros * h.repostaje.precioPorLitro).toFixed(2);
 
     const row = document.createElement('div');
-    row.className = 'list-item';
+    row.className = 'list-item list-item--clickable';
     row.innerHTML = `
         <div class="list-item__info">
             <div class="list-item__title">${fechaTexto} <span class="list-item__time">${horaTexto}</span></div>
@@ -304,12 +306,19 @@ function createRepostajeRowElement(h) {
             <div class="list-item__consumo ${colorClass}">${consumoTexto}</div>
         </div>
     `;
+    row.addEventListener('click', () => showRepostajeDetail(h.repostaje.id));
     return row;
 }
 
 // ==========================================
 // SELECTOR DE VEHÍCULO
 // ==========================================
+
+// El tipo de vehículo se guarda como "🚗 Coche", "🏍️ Motocicleta", etc.
+// En el desplegable solo queremos el icono (el texto ya es redundante con él).
+function getVehicleTypeIcon(vehicleType) {
+    return (vehicleType || '').split(' ')[0];
+}
 
 function renderVehiclePicker() {
     const vehicles = loadVehicles();
@@ -319,7 +328,7 @@ function renderVehiclePicker() {
     vehicles.forEach(v => {
         const opt = document.createElement('option');
         opt.value = v.id;
-        opt.textContent = `${v.vehicleType} ${v.name} - ${v.licensePlate}`;
+        opt.textContent = `${getVehicleTypeIcon(v.vehicleType)} ${v.name} - ${v.licensePlate}`;
         picker.appendChild(opt);
     });
 
@@ -646,6 +655,114 @@ function showRepostajeList() {
     }
 
     showOnly('repostajeListPanel');
+}
+
+// ==========================================
+// DETALLE / EDICIÓN / BORRADO DE UN REPOSTAJE
+// ==========================================
+
+function showRepostajeDetail(repostajeId) {
+    if (!selectedVehicleId) return;
+
+    selectedRepostajeId = repostajeId;
+
+    const h = getHistorialConConsumo(selectedVehicleId).find(item => item.repostaje.id === repostajeId);
+    if (!h) return;
+    const r = h.repostaje;
+
+    const fecha = new Date(r.fechaHora);
+    document.getElementById('detailFechaHora').textContent =
+        `${fecha.toLocaleDateString('es-ES')} ${fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
+    document.getElementById('detailKm').textContent = `${r.kmActuales} km`;
+    document.getElementById('detailFuel').textContent = r.tipoCombustible;
+    document.getElementById('detailLitros').textContent = `${r.litros.toFixed(2)} L`;
+    document.getElementById('detailPrecio').textContent = `${r.precioPorLitro.toFixed(3)} €/L`;
+    document.getElementById('detailCoste').textContent = `${(r.litros * r.precioPorLitro).toFixed(2)} €`;
+    document.getElementById('detailConsumo').textContent = h.consumo !== null ? `${h.consumo.toFixed(2)} L/100km` : 'Sin datos';
+
+    document.getElementById('repostajeDetailView').style.display = '';
+    document.getElementById('repostajeDetailEdit').style.display = 'none';
+    document.getElementById('repostajeDetailEditMessage').style.display = 'none';
+
+    showOnly('repostajeDetailPanel');
+}
+
+function enterRepostajeEditMode() {
+    const r = loadRepostajes().find(item => item.id === selectedRepostajeId);
+    if (!r) return;
+
+    const fecha = new Date(r.fechaHora);
+    document.getElementById('editKmActualesInput').value = r.kmActuales;
+    document.getElementById('editLitrosInput').value = r.litros;
+    document.getElementById('editFuelTypeSelect').value = r.tipoCombustible;
+    document.getElementById('editPrecioPorLitroInput').value = r.precioPorLitro;
+    document.getElementById('editFechaInput').value = fecha.toISOString().slice(0, 10);
+    document.getElementById('editHoraInput').value = fecha.toTimeString().slice(0, 5);
+    updateEditCosteTotal();
+    document.getElementById('repostajeDetailEditMessage').style.display = 'none';
+
+    document.getElementById('repostajeDetailView').style.display = 'none';
+    document.getElementById('repostajeDetailEdit').style.display = '';
+}
+
+function updateEditCosteTotal() {
+    const litros = parseNumber(document.getElementById('editLitrosInput').value);
+    const precio = parseNumber(document.getElementById('editPrecioPorLitroInput').value);
+    document.getElementById('editCosteTotalDisplay').textContent = `${(litros * precio).toFixed(2)} €`;
+}
+
+function showRepostajeDetailEditError(message) {
+    const el = document.getElementById('repostajeDetailEditMessage');
+    el.textContent = '❌ ' + message;
+    el.style.display = '';
+}
+
+function onSaveRepostajeEdit() {
+    if (selectedRepostajeId === null) return;
+
+    const kmStr = document.getElementById('editKmActualesInput').value.trim();
+    const km = parseInt(kmStr, 10);
+    const litros = parseNumber(document.getElementById('editLitrosInput').value);
+    const fuelType = document.getElementById('editFuelTypeSelect').value;
+    const precio = parseNumber(document.getElementById('editPrecioPorLitroInput').value);
+    const fecha = document.getElementById('editFechaInput').value;
+    const hora = document.getElementById('editHoraInput').value;
+
+    if (!kmStr || isNaN(km)) return showRepostajeDetailEditError('Introduce un valor válido de km actuales.');
+    if (!litros || litros <= 0) return showRepostajeDetailEditError('Introduce una cantidad de litros válida.');
+    if (!fuelType) return showRepostajeDetailEditError('Selecciona el tipo de combustible.');
+    if (!precio || precio <= 0) return showRepostajeDetailEditError('Introduce un precio por litro válido.');
+    if (!fecha) return showRepostajeDetailEditError('Selecciona una fecha.');
+
+    const repostajes = loadRepostajes();
+    const existing = repostajes.find(r => r.id === selectedRepostajeId);
+    if (!existing) return;
+
+    Object.assign(existing, {
+        kmActuales: km,
+        litros,
+        tipoCombustible: fuelType,
+        precioPorLitro: precio,
+        fechaHora: new Date(`${fecha}T${hora || '00:00'}:00`).toISOString(),
+    });
+    saveRepostajes(repostajes);
+
+    updateConsumoLabels();
+    alert('✅ Repostaje actualizado correctamente.');
+    showRepostajeList();
+}
+
+function onDeleteRepostajeDetail() {
+    if (selectedRepostajeId === null) return;
+
+    const confirmado = confirm('¿Seguro que quieres borrar este repostaje?');
+    if (!confirmado) return;
+
+    saveRepostajes(loadRepostajes().filter(r => r.id !== selectedRepostajeId));
+    selectedRepostajeId = null;
+
+    updateConsumoLabels();
+    showRepostajeList();
 }
 
 // ==========================================
@@ -1053,6 +1170,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('btnBackFromVehicleList').addEventListener('click', () => showOnly('vehicleSelectorPanel'));
     document.getElementById('btnBackFromRepostajeList').addEventListener('click', () => showOnly('vehicleSelectorPanel'));
+    document.getElementById('btnBackFromRepostajeDetail').addEventListener('click', () => showOnly('repostajeListPanel'));
+    document.getElementById('btnEditRepostaje').addEventListener('click', enterRepostajeEditMode);
+    document.getElementById('btnDeleteRepostaje').addEventListener('click', onDeleteRepostajeDetail);
+    document.getElementById('btnSaveRepostajeEdit').addEventListener('click', onSaveRepostajeEdit);
+    document.getElementById('editLitrosInput').addEventListener('input', updateEditCosteTotal);
+    document.getElementById('editPrecioPorLitroInput').addEventListener('input', updateEditCosteTotal);
     document.getElementById('btnBackFromRepostajeForm').addEventListener('click', () => showOnly('vehicleSelectorPanel'));
     document.getElementById('btnBackFromCreateVehicle').addEventListener('click', exitVehicleForm);
 
