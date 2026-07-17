@@ -33,8 +33,10 @@ Al abrir la app verás un desplegable **VEHÍCULO** en la pantalla principal.
 
 - Si es la primera vez, la app trae 3 vehículos de ejemplo precargados para que puedas probarla.
 - Para gestionar tus propios vehículos, pulsa el icono de menú **☰** (arriba a la derecha):
-  - **➕ Crear vehículo**: abre un formulario con nombre, matrícula, marca, modelo, tipo de vehículo, año, tipo de combustible y una descripción opcional. Pulsa **💾 Guardar** para darlo de alta.
+  - **➕ Crear vehículo**: abre un formulario con nombre, matrícula, marca, modelo, tipo de vehículo (🚗 Coche, 🏍️ Motocicleta, 🛺 Quad, 🚐 Furgoneta, 🚌 Autocaravana o 🚛 Camión), año, tipo de combustible y una descripción opcional. Pulsa **💾 Guardar** para darlo de alta.
   - **📋 Listar vehículos**: muestra todos tus vehículos, con botones para ✏️ editarlos o 🗑️ borrarlos (borrar un vehículo también borra todos sus repostajes).
+
+En el desplegable, cada vehículo aparece como el icono de su tipo + nombre + matrícula (por ejemplo "🚗 Sedán Familiar - 1234ABC"); el tipo no se repite en texto porque ya lo indica el icono.
 
 El desplegable recuerda el último vehículo consultado y lo vuelve a seleccionar automáticamente la próxima vez que abras la app.
 
@@ -51,6 +53,15 @@ Debajo también verás:
 - **Consumo medio mensual** y **Consumo medio total** (L/100km).
 - **Gasto medio mensual** (€), calculado a partir del histórico de repostajes.
 
+### 3.1. Ver, modificar o borrar un repostaje concreto
+
+Al pulsar sobre cualquier repostaje del listado, se abre un panel con todos sus datos completos (fecha y hora, km, tipo de combustible, litros, precio por litro, coste total y consumo). Desde ahí puedes:
+
+- **✏️ Modificar**: el panel pasa a modo edición con los mismos campos que al crear un repostaje (km, litros, combustible, precio, fecha y hora). Pulsa **💾 Guardar cambios** para actualizarlo.
+- **🗑️ Borrar**: pide confirmación ("¿Seguro que quieres borrar este repostaje?"); si aceptas se borra definitivamente, si cancelas no ocurre nada.
+
+Como en el resto de la app, el botón **"Volver"** (arriba a la derecha) descarta cualquier cambio no guardado y te devuelve al listado.
+
 ---
 
 ## 4. Otros gastos del vehículo
@@ -61,8 +72,8 @@ Pulsando **"Otros gastos del vehículo"** accedes al panel **Gastos generales**,
 |---|---|---|
 | Gasto anual del seguro | Input directo | Importe anual del seguro |
 | 🛂 ITV | Botón → panel propio | Cantidad, fecha de caducidad y avisos (ver más abajo) |
-| Gasto anual IVTM (Viñeta) | Input directo | Importe anual del impuesto de circulación |
-| 🔧 Mantenimientos | Botón → menú propio | Gastos de mantenimiento (ver más abajo) |
+| IVTM anual (Viñeta) | Input directo | Importe anual del impuesto de circulación |
+| Mantenimientos | Botón → menú propio | Gastos de mantenimiento (ver más abajo) |
 | Financiación | Botón → panel propio | Cuota mensual de un préstamo/financiación y desde qué mes se paga |
 | Renting | Botón → panel propio | Frecuencia (mensual/trimestral/anual), importe y mes de inicio |
 | Leasing | Botón → panel propio | Igual que Renting |
@@ -79,7 +90,7 @@ Pulsa **💾 Guardar** en el panel de Gastos generales para guardar el seguro y 
 - Cuando corresponda, verá un aviso en la pantalla principal (banner amarillo a partir de 30 días, rojo urgente a partir de 15 días o si ya ha caducado). Es un aviso **dentro de la app** (no es una notificación push del sistema), por lo que solo se muestra cuando abres VehiCost.
 
 ### 4.2. Mantenimientos
-Desde el botón **🔧 Mantenimientos** se abre un menú con:
+Desde el botón **Mantenimientos** se abre un menú con:
 - **📋 Listar gastos**: ver todos los mantenimientos registrados (título, fecha e importe), con opción de ✏️ editar o 🗑️ borrar cada uno.
 - **➕ Añadir**: formulario para dar de alta un nuevo gasto de mantenimiento (título del tipo de mantenimiento, por ejemplo "Cambio de aceite", y su importe).
 
